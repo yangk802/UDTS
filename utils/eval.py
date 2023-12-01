@@ -1,0 +1,37 @@
+from __future__ import print_function, absolute_import
+import torch
+
+__all__ = ['accuracy']
+
+def accuracy(output, target, topk=(1,)):
+    """Computes the precision@k for the specified values of k"""
+    maxk = max(topk)
+    batch_size = target.size(0)
+
+    _, pred = output.topk(maxk, 1, True, True)
+    pred = pred.t()
+    correct = pred.eq(target.view(1, -1).expand_as(pred))
+
+    res = []
+    for k in topk:
+        correct_k = correct[:k].reshape(correct[:k].size()[0]*correct[:k].size()[1]).float().sum(0)
+        res.append(correct_k.mul_(100.0 / batch_size))
+    return res
+
+def accuracy2(output, target, topk=(1,)):
+    """Computes the precision@k for the specified values of k"""
+    maxk = max(topk)
+    batch_size = target.size(0)
+
+    _, pred = output.topk(maxk, 1, True, True)
+    pred = pred.t()
+    correct = pred.eq(target.view(1, -1).expand_as(pred))
+
+    res = []
+    for k in topk:
+        correct_k = correct[:k].contiguous().view(-1).float().sum(0)
+        try:
+            res.append(correct_k.mul_(100.0 / batch_size))
+        except:
+            res = (torch.tensor(0.0), torch.tensor(0.0))
+    return res
